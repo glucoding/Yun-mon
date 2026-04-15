@@ -1,0 +1,146 @@
+name: yun-mon
+
+services:
+  demo-service:
+    build:
+      context: ./apps/demo-service
+    container_name: yunmon-demo-service
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      APP_LOG_DIR: /var/log/yunmon
+      JAVA_OPTS: -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+    labels:
+      monitoring_enabled: "true"
+      service_name: "demo-service"
+      monitoring_metrics_path: "/actuator/prometheus"
+    ports:
+      - "${DEMO_SERVICE_HOST_PORT:-18080}:8080"
+    volumes:
+      - demo-service-logs:/var/log/yunmon
+    networks:
+      - monitoring-net
+
+  docker-stats-exporter:
+    build:
+      context: ./infra/docker-stats-exporter
+    container_name: yunmon-docker-stats-exporter
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - monitoring-net
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    container_name: yunmon-prometheus
+    user: "0:0"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infra/prometheus/rules:/etc/prometheus/rules:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - cadvisor
+      - alertmanager
+      - demo-service
+      - docker-stats-exporter
+    networks:
+      - monitoring-net
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    container_name: yunmon-alertmanager
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./infra/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    networks:
+      - monitoring-net
+
+  loki:
+    image: grafana/loki:3.4.2
+    container_name: yunmon-loki
+    command:
+      - -config.file=/etc/loki/loki-config.yml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./infra/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki-data:/loki
+    networks:
+      - monitoring-net
+
+  promtail:
+    image: grafana/promtail:3.4.2
+    container_name: yunmon-promtail
+    command:
+      - -config.file=/etc/promtail/promtail-config.yml
+    depends_on:
+      - loki
+    volumes:
+      - ./infra/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      - demo-service-logs:/var/log/yunmon:ro
+      - promtail-data:/tmp
+    networks:
+      - monitoring-net
+
+  grafana:
+    image: grafana/grafana:11.5.2
+    container_name: yunmon-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin123456}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "${GRAFANA_HOST_PORT:-13000}:3000"
+    depends_on:
+      - prometheus
+      - loki
+      - alertmanager
+    volumes:
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    networks:
+      - monitoring-net
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    container_name: yunmon-cadvisor
+    privileged: true
+    command:
+      - --docker_only=true
+      - --housekeeping_interval=30s
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    networks:
+      - monitoring-net
+
+networks:
+  monitoring-net:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  loki-data:
+  grafana-data:
+  alertmanager-data:
+  promtail-data:
+  demo-service-logs:

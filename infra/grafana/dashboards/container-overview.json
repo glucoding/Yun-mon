@@ -1,0 +1,443 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "graphTooltip": 0,
+  "id": null,
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "expr": "avg by (compose_service) (docker_container_cpu_usage_ratio{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"})",
+          "legendFormat": "{{compose_service}}",
+          "refId": "A"
+        }
+      ],
+      "title": "容器 CPU 使用率",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (compose_service) (docker_container_memory_working_set_bytes{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"})",
+          "legendFormat": "{{compose_service}}",
+          "refId": "A"
+        }
+      ],
+      "title": "容器内存工作集",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (compose_service) (rate(docker_container_network_receive_bytes_total{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"}[5m]))",
+          "legendFormat": "{{compose_service}} 接收",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (compose_service) (rate(docker_container_network_transmit_bytes_total{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"}[5m]))",
+          "legendFormat": "{{compose_service}} 发送",
+          "refId": "B"
+        }
+      ],
+      "title": "容器网络吞吐",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (compose_service) (rate(docker_container_blkio_read_bytes_total{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"}[5m]))",
+          "legendFormat": "{{compose_service}} 读",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (compose_service) (rate(docker_container_blkio_write_bytes_total{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"}[5m]))",
+          "legendFormat": "{{compose_service}} 写",
+          "refId": "B"
+        }
+      ],
+      "title": "容器磁盘吞吐",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(实例数|Value #A)$"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(CPU 使用率|Value #B)$"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(内存工作集|Value #C)$"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(网络接收|Value #D)$"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "Bps"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(网络发送|Value #E)$"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "Bps"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(磁盘读取|Value #F)$"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "Bps"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(磁盘写入|Value #G)$"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "Bps"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "内存工作集"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "expr": "count by (compose_service) (docker_container_info{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "expr": "avg by (compose_service) (docker_container_cpu_usage_ratio{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        },
+        {
+          "expr": "sum by (compose_service) (docker_container_memory_working_set_bytes{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "C"
+        },
+        {
+          "expr": "sum by (compose_service) (rate(docker_container_network_receive_bytes_total{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"}[5m]))",
+          "format": "table",
+          "instant": true,
+          "refId": "D"
+        },
+        {
+          "expr": "sum by (compose_service) (rate(docker_container_network_transmit_bytes_total{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"}[5m]))",
+          "format": "table",
+          "instant": true,
+          "refId": "E"
+        },
+        {
+          "expr": "sum by (compose_service) (rate(docker_container_blkio_read_bytes_total{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"}[5m]))",
+          "format": "table",
+          "instant": true,
+          "refId": "F"
+        },
+        {
+          "expr": "sum by (compose_service) (rate(docker_container_blkio_write_bytes_total{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"}[5m]))",
+          "format": "table",
+          "instant": true,
+          "refId": "G"
+        }
+      ],
+      "title": "容器服务总览",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "compose_service",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Time 1": true,
+              "Time 2": true,
+              "Time 3": true,
+              "Time 4": true,
+              "Time 5": true,
+              "Time 6": true
+            },
+            "indexByName": {
+              "compose_service": 0,
+              "Value #A": 1,
+              "Value #B": 2,
+              "Value #C": 3,
+              "Value #D": 4,
+              "Value #E": 5,
+              "Value #F": 6,
+              "Value #G": 7
+            },
+            "renameByName": {
+              "compose_service": "容器服务",
+              "Value #A": "实例数",
+              "Value #B": "CPU 使用率",
+              "Value #C": "内存工作集",
+              "Value #D": "网络接收",
+              "Value #E": "网络发送",
+              "Value #F": "磁盘读取",
+              "Value #G": "磁盘写入"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [
+    "yun-mon",
+    "containers"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": ".*",
+          "value": ".*"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(docker_container_memory_working_set_bytes{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service!=\"\"}, compose_service)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "容器服务",
+        "multi": false,
+        "name": "service",
+        "options": [],
+        "query": {
+          "query": "label_values(docker_container_memory_working_set_bytes{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service!=\"\"}, compose_service)",
+          "refId": "Prometheus-service-Variable-Query"
+        },
+        "refresh": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "title": "Yun-mon Container Overview",
+  "uid": "yunmon-container-overview",
+  "version": 3
+}

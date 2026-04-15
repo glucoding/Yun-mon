@@ -1,0 +1,9 @@
+target/
+.idea/
+.vscode/
+.mvn/wrapper/maven-wrapper.jar
+logs/
+*.log
+.env
+docker-data/
+

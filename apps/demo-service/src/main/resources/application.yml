@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: demo-service
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+  metrics:
+    tags:
+      app: ${spring.application.name}
+      env: ${APP_ENV:local}
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: true
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: Yun-mon observability demo service
+    version: 0.1.0-SNAPSHOT
+
+logging:
+  file:
+    name: ${APP_LOG_DIR:./logs}/demo-service.log
+  pattern:
+    console: "ts=%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} level=%-5level app=${spring.application.name} traceId=%X{traceId:-none} spanId=%X{spanId:-none} logger=%logger{36} thread=\"%thread\" msg=\"%msg\"%n%wEx"
+    file: "ts=%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} level=%-5level app=${spring.application.name} traceId=%X{traceId:-none} spanId=%X{spanId:-none} logger=%logger{36} thread=\"%thread\" msg=\"%msg\"%n%wEx"
