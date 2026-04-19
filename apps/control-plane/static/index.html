@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yun-mon Unified Control Console</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="topbar-copy">
+        <p class="eyebrow">Yun-mon Control Plane</p>
+        <h1>统一监测控制台</h1>
+        <p class="subtitle">
+          用左侧功能树进入不同配置页面，在右侧完成平台组件、应用监管和执行能力管理。
+        </p>
+      </div>
+      <div class="topbar-actions">
+        <button id="reload-config" class="secondary">重新加载配置</button>
+        <button id="save-config">保存并生成配置</button>
+        <button id="refresh-status" class="secondary">刷新运行状态</button>
+        <button id="reload-prometheus" class="secondary">热重载 Prometheus</button>
+        <button id="restart-stack" class="danger">重启监测运行时</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-head">
+            <p class="section-kicker">Feature Tree</p>
+            <h2>功能树</h2>
+          </div>
+
+          <nav class="tree-nav">
+            <section class="tree-group" data-group>
+              <button class="tree-group-toggle" type="button" data-group-toggle aria-expanded="true">
+                <span>总览</span>
+              </button>
+              <div class="tree-items">
+                <button class="tree-item active" type="button" data-panel="overview">
+                  <span class="tree-item-label">运行总览</span>
+                  <span class="tree-badge" data-badge-for="overview"></span>
+                </button>
+              </div>
+            </section>
+
+            <section class="tree-group" data-group>
+              <button class="tree-group-toggle" type="button" data-group-toggle aria-expanded="true">
+                <span>平台配置</span>
+              </button>
+              <div class="tree-items">
+                <button class="tree-item" type="button" data-panel="system">
+                  <span class="tree-item-label">系统与环境</span>
+                </button>
+                <button class="tree-item" type="button" data-panel="ports">
+                  <span class="tree-item-label">外部端口</span>
+                </button>
+                <button class="tree-item" type="button" data-panel="grafana">
+                  <span class="tree-item-label">Grafana</span>
+                </button>
+                <button class="tree-item" type="button" data-panel="prometheus">
+                  <span class="tree-item-label">Prometheus</span>
+                </button>
+                <button class="tree-item" type="button" data-panel="alertmanager">
+                  <span class="tree-item-label">Alertmanager</span>
+                </button>
+                <button class="tree-item" type="button" data-panel="loki">
+                  <span class="tree-item-label">Loki</span>
+                </button>
+                <button class="tree-item" type="button" data-panel="promtail">
+                  <span class="tree-item-label">Promtail</span>
+                </button>
+                <button class="tree-item" type="button" data-panel="docker-stats-exporter">
+                  <span class="tree-item-label">Docker Stats Exporter</span>
+                </button>
+                <button class="tree-item" type="button" data-panel="cadvisor">
+                  <span class="tree-item-label">cAdvisor</span>
+                </button>
+                <button class="tree-item" type="button" data-panel="stack-agent">
+                  <span class="tree-item-label">Host Stack Agent</span>
+                  <span class="tree-badge" data-badge-for="stack-agent"></span>
+                </button>
+              </div>
+            </section>
+
+            <section class="tree-group" data-group>
+              <button class="tree-group-toggle" type="button" data-group-toggle aria-expanded="true">
+                <span>应用治理</span>
+              </button>
+              <div class="tree-items">
+                <button class="tree-item" type="button" data-panel="application-defaults">
+                  <span class="tree-item-label">默认策略</span>
+                  <span class="tree-badge" data-badge-for="application-defaults"></span>
+                </button>
+                <button class="tree-item" type="button" data-panel="applications">
+                  <span class="tree-item-label">应用监管</span>
+                  <span class="tree-badge" data-badge-for="applications"></span>
+                </button>
+                <button class="tree-item" type="button" data-panel="demo-app">
+                  <span class="tree-item-label">内置 Demo 应用</span>
+                  <span class="tree-badge" data-badge-for="demo-app"></span>
+                </button>
+              </div>
+            </section>
+
+            <section class="tree-group" data-group>
+              <button class="tree-group-toggle" type="button" data-group-toggle aria-expanded="true">
+                <span>指标治理</span>
+              </button>
+              <div class="tree-items">
+                <button class="tree-item" type="button" data-panel="metric-overview">
+                  <span class="tree-item-label">指标总览</span>
+                  <span class="tree-badge" data-badge-for="metric-overview"></span>
+                </button>
+                <button class="tree-item" type="button" data-panel="metric-catalog">
+                  <span class="tree-item-label">指标目录</span>
+                  <span class="tree-badge" data-badge-for="metric-catalog"></span>
+                </button>
+                <button class="tree-item" type="button" data-panel="metric-visualization">
+                  <span class="tree-item-label">可视化配置</span>
+                  <span class="tree-badge" data-badge-for="metric-visualization"></span>
+                </button>
+              </div>
+            </section>
+          </nav>
+        </div>
+      </aside>
+
+      <section class="content-area">
+        <form id="config-form">
+          <section class="content-panel active" data-panel="overview">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Overview</p>
+                <h2>运行总览</h2>
+              </div>
+            </div>
+
+            <div class="overview-grid">
+              <section class="card">
+                <div class="card-head">
+                  <div>
+                    <p class="section-kicker">Execution Plane</p>
+                    <h2>执行能力</h2>
+                  </div>
+                </div>
+                <div id="runtime-status" class="runtime-list"></div>
+              </section>
+
+              <section class="card">
+                <div class="card-head">
+                  <div>
+                    <p class="section-kicker">Runtime Snapshot</p>
+                    <h2>运行状态</h2>
+                  </div>
+                </div>
+                <div id="service-list" class="service-list"></div>
+              </section>
+
+              <section class="card">
+                <div class="card-head">
+                  <div>
+                    <p class="section-kicker">Release Notes</p>
+                    <h2>发布说明</h2>
+                  </div>
+                </div>
+                <ul class="notes">
+                  <li>保存后会统一生成 `.env`、Prometheus、Alertmanager、Loki、Promtail 与 Grafana 控制台入口配置。</li>
+                  <li>Prometheus 会热重载；文件型配置变更可通过“重启监测运行时”让现有容器重新加载。</li>
+                  <li>当 `stack-agent` 可用时，控制台会走宿主机侧 `docker compose up -d --build`，把端口、环境变量和镜像重建类变更一并闭环。</li>
+                  <li>当 `stack-agent` 不可用时，会自动回退到容器级 Docker API 重启；默认不会重启当前 `control-plane`。</li>
+                </ul>
+              </section>
+
+              <section class="card">
+                <div class="card-head">
+                  <div>
+                    <p class="section-kicker">Action Log</p>
+                    <h2>操作结果</h2>
+                  </div>
+                </div>
+                <pre id="action-output" class="output">等待加载配置...</pre>
+              </section>
+            </div>
+          </section>
+
+          <section class="content-panel" data-panel="system">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Platform Configuration</p>
+                <h2>系统与环境</h2>
+                <p class="panel-note">定义监测平台的项目标识、部署环境和集群名称，用于统一标签与环境区分。</p>
+              </div>
+            </div>
+            <div class="panel-card">
+              <label>监测项目标识<input name="system.monitoringProject" type="text"></label>
+              <label>环境<input name="system.environment" type="text"></label>
+              <label>集群名称<input name="system.clusterName" type="text"></label>
+            </div>
+          </section>
+
+          <section class="content-panel" data-panel="ports">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Platform Configuration</p>
+                <h2>外部端口</h2>
+                <p class="panel-note">管理监测组件对宿主机暴露的访问端口，决定控制台、Grafana 和各服务的入口地址。</p>
+              </div>
+            </div>
+            <div class="panel-card two-column">
+              <label>Grafana 端口<input name="ports.grafanaHostPort" type="number"></label>
+              <label>Demo Service 端口<input name="ports.demoServiceHostPort" type="number"></label>
+              <label>Control Plane 端口<input name="ports.controlPlaneHostPort" type="number"></label>
+              <label>Prometheus 端口<input name="ports.prometheusHostPort" type="number"></label>
+              <label>Alertmanager 端口<input name="ports.alertmanagerHostPort" type="number"></label>
+              <label>Loki 端口<input name="ports.lokiHostPort" type="number"></label>
+              <label>cAdvisor 端口<input name="ports.cadvisorHostPort" type="number"></label>
+            </div>
+          </section>
+
+          <section class="content-panel" data-panel="grafana">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Platform Configuration</p>
+                <h2>Grafana</h2>
+                <p class="panel-note">负责展示仪表盘、日志检索和告警看板，是用户查看监测结果的主要界面。</p>
+              </div>
+            </div>
+            <div class="panel-card">
+              <label>管理员用户名<input name="grafana.adminUser" type="text"></label>
+              <label>管理员密码<input name="grafana.adminPassword" type="text"></label>
+              <label class="switch">
+                <input name="grafana.allowSignUp" type="checkbox">
+                <span>允许用户注册</span>
+              </label>
+            </div>
+          </section>
+
+          <section class="content-panel" data-panel="prometheus">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Platform Configuration</p>
+                <h2>Prometheus</h2>
+                <p class="panel-note">负责采集指标、执行规则计算并向告警链路输出监测事件，是指标监测的核心引擎。</p>
+              </div>
+            </div>
+            <div class="panel-card two-column">
+              <label>抓取间隔<input name="prometheus.scrapeInterval" type="text"></label>
+              <label>规则计算间隔<input name="prometheus.evaluationInterval" type="text"></label>
+              <label>Docker 发现刷新间隔<input name="prometheus.dockerDiscoveryRefreshInterval" type="text"></label>
+              <label>外部标签 cluster<input name="prometheus.externalLabels.cluster" type="text"></label>
+              <label>外部标签 env<input name="prometheus.externalLabels.env" type="text"></label>
+            </div>
+          </section>
+
+          <section class="content-panel" data-panel="alertmanager">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Platform Configuration</p>
+                <h2>Alertmanager</h2>
+                <p class="panel-note">负责对 Prometheus 告警进行分组、抑制和路由，是告警治理与通知编排中心。</p>
+              </div>
+            </div>
+            <div class="panel-card two-column">
+              <label>解析超时<input name="alertmanager.resolveTimeout" type="text"></label>
+              <label>分组等待<input name="alertmanager.groupWait" type="text"></label>
+              <label>分组间隔<input name="alertmanager.groupInterval" type="text"></label>
+              <label>重复发送间隔<input name="alertmanager.repeatInterval" type="text"></label>
+              <label>分组标签，逗号分隔<input name="alertmanager.groupByCsv" type="text"></label>
+            </div>
+          </section>
+
+          <section class="content-panel" data-panel="loki">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Platform Configuration</p>
+                <h2>Loki</h2>
+                <p class="panel-note">负责集中存储和查询日志数据，与 Grafana 联动实现日志检索与故障排查。</p>
+              </div>
+            </div>
+            <div class="panel-card two-column">
+              <label>路径前缀<input name="loki.pathPrefix" type="text"></label>
+              <label>副本数<input name="loki.replicationFactor" type="number"></label>
+              <label class="switch">
+                <input name="loki.authEnabled" type="checkbox">
+                <span>启用认证</span>
+              </label>
+              <label class="switch">
+                <input name="loki.reportingEnabled" type="checkbox">
+                <span>启用上报</span>
+              </label>
+            </div>
+          </section>
+
+          <section class="content-panel" data-panel="promtail">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Platform Configuration</p>
+                <h2>Promtail</h2>
+                <p class="panel-note">负责从应用日志文件中采集日志并推送到 Loki，是日志接入链路的采集代理。</p>
+              </div>
+            </div>
+            <div class="panel-card">
+              <label>Positions 文件<input name="promtail.positionsFile" type="text"></label>
+              <label>Loki Push URL<input name="promtail.clientUrl" type="text"></label>
+              <label>日志路径<input name="promtail.logPath" type="text"></label>
+            </div>
+          </section>
+
+          <section class="content-panel" data-panel="docker-stats-exporter">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Platform Configuration</p>
+                <h2>Docker Stats Exporter</h2>
+                <p class="panel-note">补充采集 Docker 容器的 CPU、内存、网络和磁盘指标，弥补 cAdvisor 标签不足场景。</p>
+              </div>
+            </div>
+            <div class="panel-card">
+              <label>目标 Compose 项目<input name="dockerStatsExporter.targetProject" type="text"></label>
+              <label>并发抓取数<input name="dockerStatsExporter.maxWorkers" type="number"></label>
+            </div>
+          </section>
+
+          <section class="content-panel" data-panel="cadvisor">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Platform Configuration</p>
+                <h2>cAdvisor</h2>
+                <p class="panel-note">采集主机与容器运行时的基础资源指标，是容器资源监测的底层数据来源之一。</p>
+              </div>
+            </div>
+            <div class="panel-card">
+              <label>采样间隔<input name="cadvisor.housekeepingInterval" type="text"></label>
+              <label class="switch">
+                <input name="cadvisor.dockerOnly" type="checkbox">
+                <span>仅采集 Docker</span>
+              </label>
+            </div>
+          </section>
+
+          <section class="content-panel" data-panel="stack-agent">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Platform Configuration</p>
+                <h2>Host Stack Agent</h2>
+                <p class="panel-note">运行在宿主机侧，负责执行真正的 docker compose build 与重建，让控制台具备完整发布闭环。</p>
+              </div>
+            </div>
+            <div class="panel-card">
+              <label class="switch">
+                <input name="stackAgent.enabled" type="checkbox">
+                <span>启用宿主机 stack-agent</span>
+              </label>
+              <label>Agent Base URL<input name="stackAgent.baseUrl" type="text"></label>
+              <label>共享令牌<input name="stackAgent.sharedToken" type="text"></label>
+            </div>
+          </section>
+
+          <section class="content-panel" data-panel="application-defaults">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Application Governance</p>
+                <h2>默认策略</h2>
+                <p class="panel-note">定义多应用自动发现后的默认监管策略，未单独覆盖的应用会继承这些默认值。</p>
+              </div>
+            </div>
+            <div class="panel-card">
+              <label class="switch">
+                <input name="applications.autoDiscoveryEnabled" type="checkbox">
+                <span>启用 Docker 应用自动发现</span>
+              </label>
+              <label class="switch">
+                <input name="applications.defaults.enabled" type="checkbox">
+                <span>默认启用新发现应用的指标监管</span>
+              </label>
+              <label>默认指标路径<input name="applications.defaults.metricsPath" type="text"></label>
+              <label>默认应用环境<input name="applications.defaults.environment" type="text"></label>
+            </div>
+          </section>
+
+          <section class="content-panel" data-panel="applications">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Application Governance</p>
+                <h2>应用监管</h2>
+                <p class="panel-note">自动列出当前已发现的 Docker 应用，并为每个应用配置是否纳管、采集端口、指标路径、显示名称和环境标签。</p>
+              </div>
+              <div class="inline-actions">
+                <button id="refresh-applications" class="secondary" type="button">刷新应用发现</button>
+              </div>
+            </div>
+            <div id="applications-summary" class="status-summary"></div>
+            <div id="applications-list" class="applications-list"></div>
+          </section>
+
+          <section class="content-panel" data-panel="demo-app">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Application Governance</p>
+                <h2>内置 Demo 应用</h2>
+                <p class="panel-note">内置示例业务应用，只用于本地验证监测链路；真正的多应用监管请优先使用“应用监管”页面。</p>
+              </div>
+            </div>
+            <div class="panel-card two-column">
+              <label>应用环境<input name="demoService.appEnv" type="text"></label>
+              <label>日志目录<input name="demoService.logDir" type="text"></label>
+              <label class="full-width">Java 参数<textarea name="demoService.javaOpts" rows="4"></textarea></label>
+              <label>服务名<input name="demoService.serviceName" type="text"></label>
+              <label>监测端口<input name="demoService.monitoringPort" type="number"></label>
+              <label>指标路径<input name="demoService.metricsPath" type="text"></label>
+              <label class="switch full-width">
+                <input name="demoService.monitoringEnabled" type="checkbox">
+                <span>启用内置 Demo 应用的监测标签</span>
+              </label>
+            </div>
+          </section>
+
+          <section class="content-panel" data-panel="metric-overview">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Metric Governance</p>
+                <h2>指标总览</h2>
+                <p class="panel-note">对监测指标进行分级分类管理，统一梳理基础指标、组合指标和宏观指标，并查看当前实时已存在的指标资产。</p>
+              </div>
+            </div>
+            <div id="metric-summary" class="status-summary"></div>
+            <div class="overview-grid">
+              <section class="card">
+                <div class="card-head">
+                  <div>
+                    <p class="section-kicker">Catalog</p>
+                    <h2>指标目录</h2>
+                  </div>
+                </div>
+                <div id="metric-category-list" class="service-list"></div>
+              </section>
+
+              <section class="card">
+                <div class="card-head">
+                  <div>
+                    <p class="section-kicker">Live Metrics</p>
+                    <h2>已有指标</h2>
+                  </div>
+                </div>
+                <div id="metric-live-list" class="metric-live-list"></div>
+              </section>
+            </div>
+          </section>
+
+          <section class="content-panel" data-panel="metric-catalog">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Metric Governance</p>
+                <h2>指标目录</h2>
+                <p class="panel-note">列出已有监测指标，定义新的指标条目，并将基础指标通过 Prometheus 表达式组合成新的组合指标或宏观指标。</p>
+              </div>
+              <div class="inline-actions">
+                <button id="refresh-metrics" class="secondary" type="button">刷新指标目录</button>
+                <button id="add-metric" class="secondary" type="button">新增指标</button>
+              </div>
+            </div>
+            <div id="metric-catalog-list" class="metric-catalog-list"></div>
+          </section>
+
+          <section class="content-panel" data-panel="metric-visualization">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Metric Governance</p>
+                <h2>可视化配置</h2>
+                <p class="panel-note">配置每个指标的默认可视化形式，包括图表类型、单位、精度和是否进入自动生成的指标治理仪表盘。</p>
+              </div>
+            </div>
+            <div id="metric-visualization-list" class="metric-catalog-list"></div>
+          </section>
+        </form>
+      </section>
+    </main>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

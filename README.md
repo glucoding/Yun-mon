@@ -1,54 +1,90 @@
 # Yun-mon
 
-基于设计方案落地的运维监测平台基础框架，当前版本包含：
+Yun-mon 是基于《信息系统运维监测项目设计方案》落地的第一版监测平台基础框架，当前仓库已经包含：
 
-- `Prometheus + Alertmanager + Grafana + Loki + Promtail + cAdvisor` 监控栈
-- `docker-stats-exporter` 用于 Docker Desktop 下的容器服务资源指标补采
-- 一个接入 `Spring Boot Actuator + Micrometer + Prometheus` 的示例服务
-- 预置的告警规则、Grafana 数据源与基础仪表盘
-- PowerShell 启动、停止、拉取组件、构建示例服务脚本
+- `Prometheus + Alertmanager + Grafana + Loki + Promtail + cAdvisor` 监测栈
+- `docker-stats-exporter`，用于补充 Docker Desktop / Docker 环境下的容器资源指标
+- 一个接入 `Spring Boot Actuator + Micrometer + Prometheus` 的示例业务服务
+- Grafana 数据源、基础仪表盘和容器总览仪表盘
+- 控制面服务 `control-plane`，用于统一管理参数、生成配置、查看服务状态和执行运行时重载
+- PowerShell 启动、停止、拉取组件脚本
 
 ## 目录结构
 
-- `compose.yaml`：整体编排入口
-- `infra/`：监控组件配置、规则、仪表盘 provisioning
-- `apps/demo-service/`：被监控的 Spring Boot 示例服务
-- `docs/system-plan.md`：按设计方案整理的系统规划与落地路线
+- `compose.yaml`：整套监测平台的编排入口
+- `infra/`：Prometheus、Alertmanager、Loki、Promtail、Grafana 等基础配置
+- `infra/control-plane/desired-state.json`：统一参数模型的单一事实源
+- `apps/demo-service/`：被监测的示例 Spring Boot 服务
+- `apps/control-plane/`：统一控制台后端与前端
+- `apps/stack-agent/`：宿主机执行代理，用于触发真正的 `docker compose up -d --build`
+- `docs/system-plan.md`：系统规划与演进方向
+- `docs/stack-agent.md`：stack-agent 设计与启停说明
 - `scripts/`：运维与启动脚本
 
 ## 快速开始
 
-1. 复制 `.env.example` 为 `.env`，按需调整 Grafana 账号密码。
-2. 运行 `powershell -ExecutionPolicy Bypass -File .\scripts\pull-components.ps1`
-3. 运行 `powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1`
+1. 复制 `.env.example` 为 `.env`
+2. 按需修改默认端口和 Grafana 管理员账号
+3. 运行 `powershell -ExecutionPolicy Bypass -File .\scripts\pull-components.ps1`
+4. 运行 `powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1`
 
-启动后默认入口：
+## 默认访问入口
 
-- Grafana: `http://localhost:13000`
-- Prometheus: `http://localhost:9090`
-- Alertmanager: `http://localhost:9093`
-- Loki: `http://localhost:3100`
-- Demo Service: `http://localhost:18080`
-- Demo Metrics: `http://localhost:18080/actuator/prometheus`
+- Grafana：`http://127.0.0.1:13000`
+- Prometheus：`http://127.0.0.1:9090`
+- Alertmanager：`http://127.0.0.1:9093`
+- Loki：`http://127.0.0.1:3100`
+- Demo Service：`http://127.0.0.1:18080`
+- Control Plane：`http://127.0.0.1:18090`
 
-如果本机端口有冲突，可在 `.env` 中覆盖：
+## 统一控制台能力
 
-- `GRAFANA_HOST_PORT`
-- `DEMO_SERVICE_HOST_PORT`
+当前 `control-plane` 已经提供以下能力：
 
-## 当前落地范围
+- 基于 `infra/control-plane/desired-state.json` 维护统一参数模型
+- 统一生成 `.env`、Prometheus、Alertmanager、Loki、Promtail 和 Grafana 控制台入口配置
+- 自动发现当前 Docker 环境中的应用，并按应用维度维护监管配置
+- 为每个应用统一配置是否纳管、采集端口、指标路径、显示名称与环境标签
+- 热重载 Prometheus 配置
+- 查询当前监测栈服务运行状态
+- 在 `stack-agent` 可用时，通过宿主机执行代理对监测栈执行真正的 `docker compose up -d --build`
+- 在 `stack-agent` 不可用时，回退到 Docker API 对当前运行容器执行受控重启
 
-这个基础框架优先实现了设计方案中的五层骨架：
+当前实现边界：
 
-- 被监控对象层：`demo-service`
-- 数据采集层：Prometheus、Promtail、cAdvisor
-- 数据存储与处理层：Prometheus TSDB、Loki
-- 告警管理层：Alertmanager
-- 可视化与分析层：Grafana
+- 当 `stack-agent` 已启动并可达时，端口、环境变量与镜像构建类变更也可从控制台闭环
+- 当 `stack-agent` 未启动时，控制台会自动回退到容器级重启，此时宿主机端口、环境变量与镜像构建类变更仍需宿主机手动执行 `docker compose up -d --build`
+- 当前“应用自动发现”优先面向 Docker 运行中的容器；若应用没有暴露可抓取的指标端口，仍需要在控制台补充采集端口后才能真正纳管
 
-## 后续建议
+Grafana 中也会 provision 一个 `Yun-mon Control Center` 仪表盘，作为统一控制台入口。
 
-- 接入真实业务系统并统一采集标签规范
-- 引入 OpenTelemetry Collector 与 Trace 后端
-- 将 Alertmanager 接入企业微信、邮件或 Webhook
-- 为更多服务补充业务指标和 SLO 告警
+## 启动宿主机 Stack Agent
+
+Windows：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start-stack-agent.ps1
+```
+
+Ubuntu：
+
+```bash
+./scripts/start-stack-agent.sh
+```
+
+更多说明见 [stack-agent.md](/E:/Yun-mon/docs/stack-agent.md)。
+
+## 当前边界
+
+这一版仍然是通用监测产品的基础骨架，不是最终形态。当前重点是：
+
+- 先把 Docker 模式的单节点基础能力跑通
+- 建立统一参数模型和控制面雏形
+- 为后续 Ubuntu 云节点部署和 Kubernetes 模式扩展预留结构
+
+后续建议重点推进：
+
+- 控制面参数模型继续抽象为 Docker / Kubernetes 双运行模式
+- 引入权限控制、配置审计和回滚记录
+- 将告警接收器、通知策略和多环境模板继续产品化
+- 接入 OpenTelemetry Collector，补齐 Trace 与统一语义模型

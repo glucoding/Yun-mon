@@ -27,4 +27,3 @@ receivers:
   - name: platform-default
 
   - name: platform-critical
-

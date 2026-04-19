@@ -38,39 +38,27 @@ scrape_configs:
         labels:
           service: loki
 
+  - job_name: control_plane
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - control-plane:8090
+        labels:
+          service: control-plane
+
+  - job_name: stack_agent
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - host.docker.internal:19090
+        labels:
+          service: stack-agent
+
   - job_name: applications
-    docker_sd_configs:
-      - host: unix:///var/run/docker.sock
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/file_sd/applications-targets.json
         refresh_interval: 30s
-    relabel_configs:
-      - source_labels:
-          - __meta_docker_container_label_monitoring_enabled
-        regex: true
-        action: keep
-      - source_labels:
-          - __meta_docker_port_private
-        regex: "8080"
-        action: keep
-      - source_labels:
-          - __meta_docker_container_label_monitoring_metrics_path
-        regex: (.+)
-        target_label: __metrics_path__
-        replacement: $1
-      - source_labels:
-          - __meta_docker_container_label_service_name
-        regex: (.+)
-        target_label: service
-        replacement: $1
-      - source_labels:
-          - __meta_docker_container_name
-        regex: /?(.*)
-        target_label: container
-        replacement: $1
-      - source_labels:
-          - __meta_docker_container_label_com_docker_compose_service
-        regex: (.+)
-        target_label: compose_service
-        replacement: $1
 
 alerting:
   alertmanagers:

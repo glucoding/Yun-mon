@@ -13,5 +13,9 @@ if ($RemoveVolumes) {
     docker compose down
 }
 
-Write-Host "Yun-mon stack stopped." -ForegroundColor Green
+$stackAgentScript = Join-Path $PSScriptRoot "stop-stack-agent.ps1"
+if (Test-Path $stackAgentScript) {
+    & $stackAgentScript
+}
 
+Write-Host "Yun-mon stack stopped." -ForegroundColor Green

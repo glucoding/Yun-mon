@@ -1,0 +1,55 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "graphTooltip": 0,
+  "id": null,
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana",
+        "uid": "-- Grafana --"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "content": "# Unified Control Console\n\n[Open Control Plane](http://127.0.0.1:18090/)\n\nUse the control plane to adjust monitoring parameters, regenerate component configuration, reload Prometheus, and reconcile the monitoring runtime.",
+        "mode": "markdown"
+      },
+      "title": "Control Plane Entry",
+      "type": "text"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [
+    "yun-mon",
+    "control-plane"
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "title": "Yun-mon Control Center",
+  "uid": "yunmon-control-center",
+  "version": 2
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "targets": [
+      "host.docker.internal:18080"
+    ],
+    "labels": {
+      "service": "demo-service",
+      "app_id": "demo-service",
+      "app_display_name": "Demo Service",
+      "env": "local",
+      "__metrics_path__": "/actuator/prometheus"
+    }
+  }
+]

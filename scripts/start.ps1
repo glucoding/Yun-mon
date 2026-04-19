@@ -31,6 +31,11 @@ function Get-DotEnvValue {
 
 Set-Location $repoRoot
 Write-Host "Starting Yun-mon monitoring stack..." -ForegroundColor Cyan
+$stackAgentScript = Join-Path $PSScriptRoot "start-stack-agent.ps1"
+if (Test-Path $stackAgentScript) {
+    & $stackAgentScript
+}
+
 $env:DOCKER_BUILDKIT = "0"
 $env:COMPOSE_DOCKER_CLI_BUILD = "0"
 
