@@ -6,4 +6,6 @@ logs/
 *.log
 .env
 docker-data/
-
+__pycache__/
+*.pyc
+test-results/
