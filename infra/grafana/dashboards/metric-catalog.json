@@ -29,7 +29,7 @@
           "unit": "short",
           "decimals": 0,
           "color": {
-            "mode": "value"
+            "mode": "thresholds"
           },
           "thresholds": {
             "mode": "absolute",
@@ -85,7 +85,7 @@
           "unit": "short",
           "decimals": 0,
           "color": {
-            "mode": "value"
+            "mode": "thresholds"
           },
           "thresholds": {
             "mode": "absolute",
@@ -144,7 +144,7 @@
           "unit": "short",
           "decimals": 0,
           "color": {
-            "mode": "background"
+            "mode": "thresholds"
           },
           "thresholds": {
             "mode": "absolute",
@@ -188,7 +188,7 @@
         },
         "orientation": "auto",
         "textMode": "auto",
-        "colorMode": "value",
+        "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "auto"
       }
@@ -203,7 +203,7 @@
           "unit": "percentunit",
           "decimals": 3,
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
           }
         },
         "overrides": []
@@ -211,8 +211,8 @@
       "gridPos": {
         "h": 9,
         "w": 12,
-        "x": 12,
-        "y": 0
+        "x": 0,
+        "y": 9
       },
       "id": 4,
       "targets": [
@@ -252,7 +252,7 @@
       "gridPos": {
         "h": 9,
         "w": 12,
-        "x": 0,
+        "x": 12,
         "y": 9
       },
       "id": 5,
@@ -293,8 +293,8 @@
       "gridPos": {
         "h": 9,
         "w": 12,
-        "x": 12,
-        "y": 9
+        "x": 0,
+        "y": 18
       },
       "id": 6,
       "targets": [
@@ -347,8 +347,8 @@
       "gridPos": {
         "h": 8,
         "w": 8,
-        "x": 0,
-        "y": 17
+        "x": 12,
+        "y": 18
       },
       "id": 7,
       "targets": [
@@ -382,7 +382,7 @@
           "unit": "short",
           "decimals": 0,
           "color": {
-            "mode": "background"
+            "mode": "thresholds"
           },
           "thresholds": {
             "mode": "absolute",
@@ -403,8 +403,8 @@
       "gridPos": {
         "h": 8,
         "w": 8,
-        "x": 8,
-        "y": 17
+        "x": 0,
+        "y": 26
       },
       "id": 8,
       "targets": [
@@ -426,7 +426,7 @@
         },
         "orientation": "auto",
         "textMode": "auto",
-        "colorMode": "value",
+        "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "auto"
       }
@@ -462,8 +462,8 @@
       "gridPos": {
         "h": 8,
         "w": 8,
-        "x": 16,
-        "y": 17
+        "x": 8,
+        "y": 26
       },
       "id": 9,
       "targets": [

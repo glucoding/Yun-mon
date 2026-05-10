@@ -1,13 +1,22 @@
 {
   "metadata": {
-    "schemaVersion": 1,
-    "lastAppliedAt": "2026-04-18T12:39:31.317020+00:00"
+    "schemaVersion": 2,
+    "lastAppliedAt": "2026-05-10T16:16:52.728201+00:00"
   },
   "system": {
     "monitoringProject": "yun-mon",
     "environment": "local",
     "clusterName": "yun-mon-local"
   },
+  "clusters": [
+    {
+      "id": "default",
+      "name": "yun-mon-local",
+      "type": "docker-compose",
+      "isPrimary": true,
+      "description": "由 v1 → v2 自动迁移生成的默认集群。"
+    }
+  ],
   "ports": {
     "grafanaHostPort": 13000,
     "demoServiceHostPort": 18080,
@@ -15,7 +24,9 @@
     "prometheusHostPort": 9090,
     "alertmanagerHostPort": 9093,
     "lokiHostPort": 3100,
-    "cadvisorHostPort": 8081
+    "cadvisorHostPort": 8081,
+    "otelCollectorOtlpHttpPort": 4318,
+    "otelCollectorOtlpGrpcPort": 4317
   },
   "grafana": {
     "adminUser": "admin",
@@ -108,7 +119,7 @@
         "category": "basic",
         "sourceType": "raw",
         "ruleMode": "external",
-        "description": "应用暴露的 HTTP 请求累计计数，可用于计算吞吐率、错误率和延迟指标。",
+        "description": "应用暴露的 HTTP 请求累计计数,可用于计算吞吐率、错误率和延迟指标。",
         "expression": "",
         "derivedFrom": [],
         "unit": "short",
@@ -128,7 +139,7 @@
         "category": "basic",
         "sourceType": "raw",
         "ruleMode": "external",
-        "description": "应用 JVM 当前已使用内存，用于观察堆和非堆资源占用变化。",
+        "description": "应用 JVM 当前已使用内存,用于观察堆和非堆资源占用变化。",
         "expression": "",
         "derivedFrom": [],
         "unit": "bytes",
@@ -148,7 +159,7 @@
         "category": "basic",
         "sourceType": "raw",
         "ruleMode": "external",
-        "description": "应用进程 CPU 使用率，可作为服务负载和性能分析的基线指标。",
+        "description": "应用进程 CPU 使用率,可作为服务负载和性能分析的基线指标。",
         "expression": "",
         "derivedFrom": [],
         "unit": "percentunit",
@@ -356,10 +367,6 @@
       }
     ]
   },
-  "dockerStatsExporter": {
-    "maxWorkers": 8,
-    "targetProject": "yun-mon"
-  },
   "prometheus": {
     "scrapeInterval": "15s",
     "evaluationInterval": "30s",
@@ -380,6 +387,32 @@
     "groupInterval": "2m",
     "repeatInterval": "4h"
   },
+  "alertReceivers": [
+    {
+      "name": "platform-default",
+      "kind": "webhook",
+      "enabled": false,
+      "config": {
+        "url": ""
+      },
+      "matchers": []
+    },
+    {
+      "name": "platform-critical",
+      "kind": "webhook",
+      "enabled": false,
+      "config": {
+        "url": ""
+      },
+      "matchers": [
+        {
+          "severity": "critical",
+          "service": null,
+          "cluster": null
+        }
+      ]
+    }
+  ],
   "loki": {
     "authEnabled": false,
     "pathPrefix": "/loki",
@@ -395,9 +428,17 @@
     "dockerOnly": true,
     "housekeepingInterval": "30s"
   },
+  "otelCollector": {
+    "enabled": false,
+    "exporters": {
+      "logging": true,
+      "otlpHttpEndpoint": ""
+    }
+  },
   "stackAgent": {
     "enabled": true,
     "baseUrl": "http://host.docker.internal:19090",
     "sharedToken": "yunmon-local-agent-token"
-  }
+  },
+  "slos": []
 }

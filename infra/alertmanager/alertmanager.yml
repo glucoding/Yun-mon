@@ -1,29 +1,31 @@
 global:
   resolve_timeout: 5m
-
 route:
   receiver: platform-default
   group_by:
-    - alertname
-    - service
-    - severity
+  - alertname
+  - service
+  - severity
   group_wait: 15s
   group_interval: 2m
   repeat_interval: 4h
   routes:
-    - receiver: platform-critical
-      matchers:
-        - severity="critical"
-
+  - receiver: platform-critical
+    matchers:
+    - severity="critical"
 inhibit_rules:
-  - source_matchers:
-      - severity="critical"
-    target_matchers:
-      - severity="warning"
-    equal:
-      - service
-
+- source_matchers:
+  - severity="critical"
+  target_matchers:
+  - severity="warning"
+  equal:
+  - service
 receivers:
-  - name: platform-default
-
-  - name: platform-critical
+- name: platform-default
+  webhook_configs:
+  - url: http://127.0.0.1:9999/placeholder
+    send_resolved: true
+- name: platform-critical
+  webhook_configs:
+  - url: http://127.0.0.1:9999/placeholder
+    send_resolved: true

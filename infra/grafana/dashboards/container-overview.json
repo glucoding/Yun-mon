@@ -15,6 +15,7 @@
       }
     ]
   },
+  "description": "容器级 CPU / 内存 / 网络 / 磁盘观察。优先使用 control-plane 内置 docker-stats 采集器(yunmon_container_*),无数据时回退到 cAdvisor(container_*)。在 Docker Desktop on Windows 下 cAdvisor 因 overlayfs 路径问题无法识别容器,推荐使用 yunmon_container_* 系列。",
   "editable": true,
   "graphTooltip": 0,
   "id": null,
@@ -49,7 +50,7 @@
       },
       "targets": [
         {
-          "expr": "avg by (compose_service) (docker_container_cpu_usage_ratio{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"})",
+          "expr": "sum by (compose_service) (rate(yunmon_container_cpu_seconds_total{compose_service=~\"$service\"}[2m]))",
           "legendFormat": "{{compose_service}}",
           "refId": "A"
         }
@@ -86,7 +87,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (compose_service) (docker_container_memory_working_set_bytes{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"})",
+          "expr": "sum by (compose_service) (yunmon_container_memory_working_set_bytes{compose_service=~\"$service\"})",
           "legendFormat": "{{compose_service}}",
           "refId": "A"
         }
@@ -123,12 +124,12 @@
       },
       "targets": [
         {
-          "expr": "sum by (compose_service) (rate(docker_container_network_receive_bytes_total{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"}[5m]))",
+          "expr": "sum by (compose_service) (rate(yunmon_container_network_receive_bytes_total{compose_service=~\"$service\"}[5m]))",
           "legendFormat": "{{compose_service}} 接收",
           "refId": "A"
         },
         {
-          "expr": "sum by (compose_service) (rate(docker_container_network_transmit_bytes_total{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"}[5m]))",
+          "expr": "sum by (compose_service) (rate(yunmon_container_network_transmit_bytes_total{compose_service=~\"$service\"}[5m]))",
           "legendFormat": "{{compose_service}} 发送",
           "refId": "B"
         }
@@ -165,12 +166,12 @@
       },
       "targets": [
         {
-          "expr": "sum by (compose_service) (rate(docker_container_blkio_read_bytes_total{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"}[5m]))",
+          "expr": "sum by (compose_service) (rate(yunmon_container_block_read_bytes_total{compose_service=~\"$service\"}[5m]))",
           "legendFormat": "{{compose_service}} 读",
           "refId": "A"
         },
         {
-          "expr": "sum by (compose_service) (rate(docker_container_blkio_write_bytes_total{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"}[5m]))",
+          "expr": "sum by (compose_service) (rate(yunmon_container_block_write_bytes_total{compose_service=~\"$service\"}[5m]))",
           "legendFormat": "{{compose_service}} 写",
           "refId": "B"
         }
@@ -310,43 +311,43 @@
       },
       "targets": [
         {
-          "expr": "count by (compose_service) (docker_container_info{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"})",
+          "expr": "count by (compose_service) (yunmon_container_running{compose_service=~\"$service\"})",
           "format": "table",
           "instant": true,
           "refId": "A"
         },
         {
-          "expr": "avg by (compose_service) (docker_container_cpu_usage_ratio{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"})",
+          "expr": "sum by (compose_service) (rate(yunmon_container_cpu_seconds_total{compose_service=~\"$service\"}[2m]))",
           "format": "table",
           "instant": true,
           "refId": "B"
         },
         {
-          "expr": "sum by (compose_service) (docker_container_memory_working_set_bytes{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"})",
+          "expr": "sum by (compose_service) (yunmon_container_memory_working_set_bytes{compose_service=~\"$service\"})",
           "format": "table",
           "instant": true,
           "refId": "C"
         },
         {
-          "expr": "sum by (compose_service) (rate(docker_container_network_receive_bytes_total{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"}[5m]))",
+          "expr": "sum by (compose_service) (rate(yunmon_container_network_receive_bytes_total{compose_service=~\"$service\"}[5m]))",
           "format": "table",
           "instant": true,
           "refId": "D"
         },
         {
-          "expr": "sum by (compose_service) (rate(docker_container_network_transmit_bytes_total{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"}[5m]))",
+          "expr": "sum by (compose_service) (rate(yunmon_container_network_transmit_bytes_total{compose_service=~\"$service\"}[5m]))",
           "format": "table",
           "instant": true,
           "refId": "E"
         },
         {
-          "expr": "sum by (compose_service) (rate(docker_container_blkio_read_bytes_total{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"}[5m]))",
+          "expr": "sum by (compose_service) (rate(yunmon_container_block_read_bytes_total{compose_service=~\"$service\"}[5m]))",
           "format": "table",
           "instant": true,
           "refId": "F"
         },
         {
-          "expr": "sum by (compose_service) (rate(docker_container_blkio_write_bytes_total{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service=~\"$service\"}[5m]))",
+          "expr": "sum by (compose_service) (rate(yunmon_container_block_write_bytes_total{compose_service=~\"$service\"}[5m]))",
           "format": "table",
           "instant": true,
           "refId": "G"
@@ -417,7 +418,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(docker_container_memory_working_set_bytes{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service!=\"\"}, compose_service)",
+        "definition": "label_values(yunmon_container_running{compose_service!=\"\"}, compose_service)",
         "hide": 0,
         "includeAll": true,
         "label": "容器服务",
@@ -425,7 +426,7 @@
         "name": "service",
         "options": [],
         "query": {
-          "query": "label_values(docker_container_memory_working_set_bytes{job=\"docker_stats_exporter\",compose_project=\"yun-mon\",compose_service!=\"\"}, compose_service)",
+          "query": "label_values(yunmon_container_running{compose_service!=\"\"}, compose_service)",
           "refId": "Prometheus-service-Variable-Query"
         },
         "refresh": 1,
@@ -439,5 +440,5 @@
   },
   "title": "Yun-mon Container Overview",
   "uid": "yunmon-container-overview",
-  "version": 3
+  "version": 4
 }

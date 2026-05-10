@@ -58,10 +58,10 @@ public class BusinessMetricService {
                     failedCounter.increment(count);
                     throw new IllegalStateException("Simulated business failure for alert verification");
                 }
-
                 processedCounter.increment(count);
+                // 成功路径在闭包内扣减队列深度,避免与异常分支双重扣减,确保返回的 queueDepth 与外部一致。
+                int remainingQueueDepth = Math.max(queueDepth.addAndGet(-count), 0);
                 long durationMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt);
-                int remainingQueueDepth = Math.max(queueDepth.get() - count, 0);
                 return new SimulationResult(
                         "SUCCESS",
                         count,
@@ -74,12 +74,11 @@ public class BusinessMetricService {
                     count, result.durationMs());
             return result;
         } catch (RuntimeException ex) {
+            queueDepth.addAndGet(-count);
             long durationMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt);
             log.error("event=simulation_failed app=demo-service count={} durationMs={} message={}",
                     count, durationMs, ex.getMessage());
             throw ex;
-        } finally {
-            queueDepth.addAndGet(-count);
         }
     }
 

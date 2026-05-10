@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  control-plane:
+    name: control-plane (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/control-plane
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Lint
+        run: ruff check src tests
+      - name: Test
+        run: pytest --cov=yunmon_control_plane --cov-report=term-missing --cov-fail-under=70
+      - name: Type check
+        run: mypy src || true   # P3 阶段才强制开启
+
+  demo-service:
+    name: demo-service (Java)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/demo-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - name: Maven verify
+        run: mvn -B -ntp verify
+
+  web:
+    name: control-plane web (Vue)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/control-plane/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+          cache-dependency-path: apps/control-plane/web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile=false
+      - run: pnpm build

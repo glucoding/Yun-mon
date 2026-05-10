@@ -1,0 +1,76 @@
+# Yun-mon Helm values。
+# 字段命名与 desired-state.json 一一对应,后续可通过 control-plane 提供
+# `desired-state -> helm values` 的转换工具(P3 待实现)。
+
+system:
+  monitoringProject: yun-mon
+  environment: prod
+  clusterName: yun-mon-prod
+
+clusters:
+  - id: default
+    name: 默认集群
+    type: kubernetes
+    isPrimary: true
+
+controlPlane:
+  image:
+    repository: ghcr.io/example/yun-mon-control-plane
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    type: ClusterIP
+    port: 8090
+  env:
+    CONTROL_PLANE_AUTH_ENABLED: "true"
+    CONTROL_PLANE_OTEL_ENDPOINT: ""
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+
+demoService:
+  enabled: true
+  image:
+    repository: ghcr.io/example/yun-mon-demo-service
+    tag: latest
+  replicas: 1
+  service:
+    type: ClusterIP
+    port: 8080
+
+stackAgent:
+  # K8s 模式不需要 stack-agent;由 RuntimeExecutor=Kubernetes 取代。
+  enabled: false
+
+kubePrometheusStack:
+  enabled: true
+  prometheus:
+    prometheusSpec:
+      retention: 15d
+      externalLabels:
+        cluster: yun-mon-prod
+        env: prod
+      additionalScrapeConfigs:
+        - job_name: yunmon-control-plane
+          metrics_path: /metrics
+          kubernetes_sd_configs:
+            - role: pod
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+              action: keep
+              regex: yun-mon-control-plane
+
+loki:
+  enabled: true
+  loki:
+    auth_enabled: false
+    commonConfig:
+      replication_factor: 1
+
+promtail:
+  enabled: true

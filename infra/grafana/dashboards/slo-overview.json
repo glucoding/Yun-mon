@@ -1,0 +1,55 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "graphTooltip": 0,
+  "id": null,
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana",
+        "uid": "-- Grafana --"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "content": "# SLO 概览\n\n当前未配置任何 SLO。请在控制台 `平台配置 → SLO` 面板中创建 SLO 定义后,本仪表盘将自动展示错误预算燃烧率与剩余预算。",
+        "mode": "markdown"
+      },
+      "title": "SLO 概览",
+      "type": "text"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [
+    "yun-mon",
+    "slo"
+  ],
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "title": "Yun-mon SLO Overview",
+  "uid": "yunmon-slo-overview",
+  "version": 1
+}

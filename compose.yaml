@@ -8,6 +8,7 @@ services:
       APP_ENV: ${APP_ENV:-local}
       APP_LOG_DIR: ${DEMO_SERVICE_LOG_DIR:-/var/log/yunmon}
       JAVA_OPTS: ${DEMO_SERVICE_JAVA_OPTS:--XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${DEMO_SERVICE_OTLP_ENDPOINT:-}
     labels:
       monitoring_enabled: "${DEMO_SERVICE_MONITORING_ENABLED:-true}"
       monitoring_port: "${DEMO_SERVICE_MONITORING_PORT:-8080}"
@@ -28,6 +29,8 @@ services:
       CONTROL_PLANE_HTTP_PORT: 8090
       MONITORING_PROJECT: ${MONITORING_PROJECT:-yun-mon}
       DOCKER_SOCKET: /var/run/docker.sock
+      CONTROL_PLANE_AUTH_ENABLED: ${CONTROL_PLANE_AUTH_ENABLED:-false}
+      CONTROL_PLANE_OTEL_ENDPOINT: ${CONTROL_PLANE_OTEL_ENDPOINT:-}
     labels:
       monitoring_enabled: "true"
       monitoring_port: "8090"
@@ -40,17 +43,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    networks:
-      - monitoring-net
-
-  docker-stats-exporter:
-    build:
-      context: ./infra/docker-stats-exporter
-    environment:
-      TARGET_COMPOSE_PROJECT: ${DOCKER_STATS_EXPORTER_TARGET_PROJECT:-yun-mon}
-      EXPORTER_MAX_WORKERS: ${DOCKER_STATS_EXPORTER_MAX_WORKERS:-8}
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - monitoring-net
 
@@ -75,7 +67,6 @@ services:
       - cadvisor
       - alertmanager
       - demo-service
-      - docker-stats-exporter
       - control-plane
     networks:
       - monitoring-net
@@ -153,6 +144,20 @@ services:
       - /dev/disk:/dev/disk:ro
     devices:
       - /dev/kmsg
+    networks:
+      - monitoring-net
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.110.0
+    profiles: ["otel"]
+    command:
+      - --config=/etc/otelcol/config.yaml
+    ports:
+      - "${OTEL_OTLP_HTTP_PORT:-4318}:4318"
+      - "${OTEL_OTLP_GRPC_PORT:-4317}:4317"
+      - "8889:8889"
+    volumes:
+      - ./infra/otel-collector/config.yaml:/etc/otelcol/config.yaml:ro
     networks:
       - monitoring-net
 

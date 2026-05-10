@@ -8,4 +8,35 @@ logs/
 docker-data/
 __pycache__/
 *.pyc
+
+# Python virtualenvs
+.venv/
+.venv-*/
+venv/
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# mypy / ruff caches
+.mypy_cache/
+.ruff_cache/
+
+# Frontend
+node_modules/
+apps/control-plane/web/dist/*
+!apps/control-plane/web/dist/.gitkeep
+!apps/control-plane/web/dist/index.html
+
+# Test results / build artifacts
 test-results/
+*.egg-info/
+build/
+dist/
+
+# Control plane runtime artifacts(快照、审计、账号)
+infra/control-plane/snapshots/*.json
+infra/control-plane/audit/*.jsonl
+infra/control-plane/accounts.json

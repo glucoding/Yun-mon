@@ -24,12 +24,8 @@ datasources:
           name: traceId
           url: "${__value.raw}"
 
-  - name: Alertmanager
-    type: alertmanager
-    uid: alertmanager
-    access: proxy
-    url: http://alertmanager:9093
-    editable: true
-    jsonData:
-      implementation: prometheus
+# 注:Alertmanager datasource 默认在 Grafana 11 OSS 上插件不可用,
+# 本项目告警走 Prometheus -> Alertmanager 直连链路,Grafana 不参与
+# 告警执行,不需要该 datasource。如需在 Grafana 管理 silence,可参考
+# https://grafana.com/docs/grafana/latest/datasources/alertmanager/ 手动配置。
 

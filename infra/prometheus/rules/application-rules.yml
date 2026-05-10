@@ -1,76 +1,67 @@
 groups:
-  - name: golden_signals_recording
-    interval: 30s
-    rules:
-      - record: service:http_requests:rate1m
-        expr: sum by (service, status) (rate(http_server_requests_seconds_count{job="applications"}[1m]))
+- name: golden_signals_recording
+  interval: 30s
+  rules:
+  - record: service:http_requests:rate1m
+    expr: sum by (service, status) (rate(http_server_requests_seconds_count{job="applications"}[1m]))
+  - record: service:http_errors:ratio5m
+    expr: 'sum by (service) (rate(http_server_requests_seconds_count{job="applications",status=~"5.."}[5m]))
 
-      - record: service:http_errors:ratio5m
-        expr: |
-          sum by (service) (rate(http_server_requests_seconds_count{job="applications",status=~"5.."}[5m]))
-          /
-          clamp_min(sum by (service) (rate(http_server_requests_seconds_count{job="applications"}[5m])), 0.001)
+      /
 
-      - record: service:http_latency:p95_5m
-        expr: |
-          histogram_quantile(
-            0.95,
-            sum by (service, le) (rate(http_server_requests_seconds_bucket{job="applications"}[5m]))
-          )
+      clamp_min(sum by (service) (rate(http_server_requests_seconds_count{job="applications"}[5m])), 0.001)
 
-  - name: alerting_rules
-    interval: 30s
-    rules:
-      - alert: ApplicationInstanceDown
-        expr: up{job="applications"} == 0
-        for: 2m
-        labels:
-          severity: critical
-        annotations:
-          summary: "应用实例不可用"
-          description: "服务 {{ $labels.service }} 已连续 2 分钟采集失败。"
-
-      - alert: HighHttp5xxErrorRate
-        expr: service:http_errors:ratio5m > 0.05
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "应用 5xx 错误率过高"
-          description: "服务 {{ $labels.service }} 最近 5 分钟 5xx 错误率超过 5%。"
-
-      - alert: HighHttpP95Latency
-        expr: service:http_latency:p95_5m > 0.8
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "应用 P95 延迟过高"
-          description: "服务 {{ $labels.service }} 最近 5 分钟 P95 延迟超过 800ms。"
-
-      - alert: HighBusinessQueueDepth
-        expr: yunmon_business_queue_depth{job="applications"} > 50
-        for: 3m
-        labels:
-          severity: warning
-        annotations:
-          summary: "业务队列积压"
-          description: "服务 {{ $labels.service }} 队列深度超过 50。"
-
-      - alert: ContainerHighMemoryUsage
-        expr: docker_container_memory_working_set_bytes{job="docker_stats_exporter",compose_project="yun-mon",compose_service!=""} / 1024 / 1024 > 512
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "容器内存使用偏高"
-          description: "容器 {{ $labels.compose_service }} 内存工作集持续超过 512MB。"
-
-      - alert: ContainerHighCpuUsage
-        expr: avg_over_time(docker_container_cpu_usage_ratio{job="docker_stats_exporter",compose_project="yun-mon",compose_service!=""}[5m]) > 0.8
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "容器 CPU 使用率偏高"
-          description: "容器 {{ $labels.compose_service }} 最近 5 分钟 CPU 使用率超过 80%。"
+      '
+  - record: service:http_latency:p95_5m
+    expr: "histogram_quantile(\n  0.95,\n  sum by (service, le) (rate(http_server_requests_seconds_bucket{job=\"applications\"}[5m]))\n)\n"
+- name: alerting_rules
+  interval: 30s
+  rules:
+  - alert: ApplicationInstanceDown
+    expr: up{job="applications"} == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: 应用实例不可用
+      description: 服务 {{ $labels.service }} 已连续 2 分钟采集失败。
+  - alert: HighHttp5xxErrorRate
+    expr: service:http_errors:ratio5m > 0.05
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: 应用 5xx 错误率过高
+      description: 服务 {{ $labels.service }} 最近 5 分钟 5xx 错误率超过 5%。
+  - alert: HighHttpP95Latency
+    expr: service:http_latency:p95_5m > 0.8
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: 应用 P95 延迟过高
+      description: 服务 {{ $labels.service }} 最近 5 分钟 P95 延迟超过 800ms。
+  - alert: HighBusinessQueueDepth
+    expr: yunmon_business_queue_depth{job="applications"} > 50
+    for: 3m
+    labels:
+      severity: warning
+    annotations:
+      summary: 业务队列积压
+      description: 服务 {{ $labels.service }} 队列深度超过 50。
+  - alert: ContainerHighMemoryUsage
+    expr: container_memory_working_set_bytes{name=~".+",image!=""} / 1024 / 1024 > 512
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: 容器内存使用偏高
+      description: 容器 {{ $labels.name }} 内存工作集持续超过 512MB。
+  - alert: ContainerHighCpuUsage
+    expr: avg_over_time(rate(container_cpu_usage_seconds_total{name=~".+",image!=""}[5m])[5m:30s]) > 0.8
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: 容器 CPU 使用率偏高
+      description: 容器 {{ $labels.name }} 最近 5 分钟 CPU 使用率超过 80%。

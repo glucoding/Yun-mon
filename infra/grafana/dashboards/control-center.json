@@ -32,7 +32,7 @@
       },
       "id": 1,
       "options": {
-        "content": "# Unified Control Console\n\n[Open Control Plane](http://127.0.0.1:18090/)\n\nUse the control plane to adjust monitoring parameters, regenerate component configuration, reload Prometheus, and reconcile the monitoring runtime.",
+        "content": "# 统一控制台\n\n[打开 Yun-mon 控制台](http://127.0.0.1:18090/)\n\n在控制台调整监测参数、自动渲染组件配置、热重载 Prometheus、回滚配置或触发监测运行时重建。",
         "mode": "markdown"
       },
       "title": "Control Plane Entry",

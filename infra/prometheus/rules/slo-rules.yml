@@ -1,0 +1,4 @@
+groups:
+- name: slo_rules
+  interval: 30s
+  rules: []

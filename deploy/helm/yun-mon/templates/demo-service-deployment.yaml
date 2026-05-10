@@ -1,0 +1,54 @@
+{{- if .Values.demoService.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "yunmon.fullname" . }}-demo-service
+  labels:
+    {{- include "yunmon.labels" . | nindent 4 }}
+    app.kubernetes.io/component: demo-service
+spec:
+  replicas: {{ .Values.demoService.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: yun-mon-demo-service
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: yun-mon-demo-service
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: demo-service
+        monitoring_enabled: "true"
+        monitoring_port: "8080"
+        service_name: "demo-service"
+        monitoring_metrics_path: "/actuator/prometheus"
+    spec:
+      containers:
+        - name: demo-service
+          image: "{{ .Values.demoService.image.repository }}:{{ .Values.demoService.image.tag }}"
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /api/demo/healthz
+              port: 8080
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "yunmon.fullname" . }}-demo-service
+  labels:
+    {{- include "yunmon.labels" . | nindent 4 }}
+    app.kubernetes.io/component: demo-service
+spec:
+  type: {{ .Values.demoService.service.type }}
+  selector:
+    app.kubernetes.io/name: yun-mon-demo-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - port: {{ .Values.demoService.service.port }}
+      targetPort: 8080
+      protocol: TCP
+      name: http
+{{- end -}}

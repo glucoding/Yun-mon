@@ -1,22 +1,22 @@
 groups:
-  - name: metric_catalog_composite
-    interval: 30s
-    rules:
-      - record: business:orders:failure_ratio
-        expr: yunmon_business_orders_failed_total / clamp_min(yunmon_business_orders_processed_total + yunmon_business_orders_failed_total, 1)
-        labels:
-          metric_catalog_id: business_orders_failure_ratio
-          metric_category: composite
-  - name: metric_catalog_macro
-    interval: 30s
-    rules:
-      - record: platform:applications:up_total
-        expr: sum(up{job="applications"})
-        labels:
-          metric_catalog_id: applications_up_total
-          metric_category: macro
-      - record: platform:applications:up_ratio
-        expr: sum(up{job="applications"}) / clamp_min(count(up{job="applications"}), 1)
-        labels:
-          metric_catalog_id: applications_up_ratio
-          metric_category: macro
+- name: metric_catalog_composite
+  interval: 30s
+  rules:
+  - record: business:orders:failure_ratio
+    expr: yunmon_business_orders_failed_total / clamp_min(yunmon_business_orders_processed_total + yunmon_business_orders_failed_total, 1)
+    labels:
+      metric_catalog_id: business_orders_failure_ratio
+      metric_category: composite
+- name: metric_catalog_macro
+  interval: 30s
+  rules:
+  - record: platform:applications:up_total
+    expr: sum(up{job="applications"})
+    labels:
+      metric_catalog_id: applications_up_total
+      metric_category: macro
+  - record: platform:applications:up_ratio
+    expr: sum(up{job="applications"}) / clamp_min(count(up{job="applications"}), 1)
+    labels:
+      metric_catalog_id: applications_up_ratio
+      metric_category: macro
